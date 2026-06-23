@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend (Node)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/server.js",
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "runtimeArgs": ["--watch"]
+    },
+    {
+      "name": "Frontend (Vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack",
+      "configurations": ["Backend (Node)", "Frontend (Vite)"]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #050505;
+    --bg-panel: #0A0A0A;
+    --text-primary: #ffffff;
+    --text-secondary: #d4d4d8;
+    --text-tertiary: #71717a;
+    --border-color: #27272A;
+  }
+
+  .light-mode {
+    --bg-primary: #ffffff;
+    --bg-panel: #f4f4f5;
+    --text-primary: #18181b;
+    --text-secondary: #3f3f46;
+    --text-tertiary: #71717a;
+    --border-color: #e4e4e7;
+  }
+
+  body {
+    @apply font-mono antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer components {
+  .label-mini {
+    @apply text-[10px] uppercase tracking-[0.25em];
+    color: var(--text-tertiary);
+  }
+
+  .btn-primary {
+    @apply bg-[#FF4500] px-6 py-3 font-bold uppercase tracking-widest text-sm hover:bg-[#ff5722] transition-colors disabled:opacity-50 text-black;
+  }
+
+  .btn-secondary {
+    @apply bg-[#FF4500]/10 border border-[#FF4500]/30 px-4 py-2 text-sm font-bold uppercase tracking-widest text-[#FF4500] hover:bg-[#FF4500]/20 transition-colors disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply border px-4 py-2 text-sm uppercase tracking-wider hover:border-[#FF4500] transition-colors;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .btn-ghost:hover {
+    color: #FF4500;
+  }
+
+  .input-field {
+    @apply w-full border px-4 py-3 text-sm focus:outline-none focus:border-[#FF4500];
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .panel {
+    @apply border p-6;
+    background-color: var(--bg-panel);
+    border-color: var(--border-color);
+  }
+
+  .scanline {
+    background-image: linear-gradient(
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(0, 0, 0, 0.02) 50%
+    );
+    background-size: 100% 4px;
+  }
+
+  .blink {
+    animation: blink 1s step-end infinite;
+  }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes crypto-run {
+  0% { transform: translateX(-180px) rotate(-8deg); opacity: 0; }
+  8% { opacity: 0.45; }
+  92% { opacity: 0.45; }
+  100% { transform: translateX(100vw) rotate(8deg); opacity: 0; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes fade-slide-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sprinkle {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--travel-x, 80px), var(--travel-y, -80px)) scale(0.2) rotate(180deg); }
+}
+
+@keyframes console-run {
+  0% { transform: translateX(-80px) rotate(-5deg); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% { transform: translateX(calc(50vw)) rotate(5deg); opacity: 0; }
+}
+
+@keyframes float-graphic {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-18px) rotate(6deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(12px) rotate(-4deg); }
+}
+
+@keyframes news-ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-crypto-run { animation: crypto-run linear infinite; }
+.animate-marquee { animation: marquee 40s linear infinite; }
+.animate-fade-slide-up { animation: fade-slide-up 0.6s ease-out forwards; }
+.animate-sprinkle { animation: sprinkle ease-out forwards; }
+.animate-console-run { animation: console-run linear infinite; }
+.animate-float-graphic { animation: float-graphic ease-in-out infinite; }
+.animate-news-ticker { animation: news-ticker 25s linear infinite; }
+
+.crypto-grid {
+  background-image:
+    linear-gradient(rgba(255, 69, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 69, 0, 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.crypto-grid-light {
+  background-image:
+    linear-gradient(rgba(255, 69, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 69, 0, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Light mode overrides for visibility */
+.light-mode .text-zinc-100,
+.light-mode .text-zinc-200,
+.light-mode .text-zinc-300 {
+  color: var(--text-secondary) !important;
+}
+
+.light-mode .text-zinc-400,
+.light-mode .text-zinc-500,
+.light-mode .text-zinc-600 {
+  color: var(--text-tertiary) !important;
+}
+
+.light-mode .text-white,
+.light-mode .hover\:text-white:hover {
+  color: var(--text-primary) !important;
+}
+
+.light-mode .text-green-400 {
+  color: #16a34a !important;
+}
+
+.light-mode .text-red-400 {
+  color: #dc2626 !important;
+}
+
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-primary) !important;
+}
+
+.light-mode .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* JI watermark - clearly readable in both modes */
+.ji-watermark {
+  opacity: 0.22;
+  transition: opacity 0.3s ease;
+  color: #FF4500;
+}
+
+.light-mode .ji-watermark {
+  opacity: 0.15;
+  color: #FF4500;
+}
+
+.dark .ji-watermark {
+  opacity: 0.28;
+  color: #FF4500;
+}
+
+/* News ticker styling */
+.news-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 0 24px;
+}
+
+.news-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  display: inline-block;
+}
