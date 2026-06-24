@@ -13,19 +13,24 @@
   }
 
   .light-mode {
-    --bg-primary: #ffffff;
-    --bg-panel: #f4f4f5;
-    --text-primary: #18181b;
-    --text-secondary: #3f3f46;
-    --text-tertiary: #71717a;
-    --border-color: #e4e4e7;
+    --bg-primary: #f0f4ff;
+    --bg-panel: #ffffff;
+    --text-primary: #0f0f1a;
+    --text-secondary: #1e1e3a;
+    --text-tertiary: #5a5a7a;
+    --border-color: #d0d4f0;
   }
 
   body {
     @apply font-mono antialiased;
-    background-color: var(--bg-primary);
+    background-color: transparent;
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: color 0.3s ease;
+  }
+
+  html {
+    background-color: var(--bg-primary);
+    transition: background-color 0.8s ease;
   }
 }
 
@@ -124,7 +129,51 @@
   100% { transform: translateX(-100%); }
 }
 
-.animate-crypto-run { animation: crypto-run linear infinite; }
+@keyframes shatter {
+  0%   { opacity: 0.8; transform: translate(0,0) rotate(0deg) scaleX(1); }
+  40%  { opacity: 1; transform: translate(calc(var(--drift-x)*0.3), calc(var(--drift-y)*0.3)) rotate(calc(var(--rot)*0.4)) scaleX(1.4); }
+  100% { opacity: 0; transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--rot)) scaleX(0.2); }
+}
+
+@keyframes glitch-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  40%  { opacity: 0; }
+  60%  { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+@keyframes page-in {
+  0%   { opacity: 0; transform: translateY(12px) skewY(0.5deg); filter: blur(4px); }
+  60%  { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) skewY(0); }
+}
+
+.animate-shatter { animation: shatter ease-out forwards; }
+.animate-glitch-flash { animation: glitch-flash 0.4s ease-out forwards; }
+.animate-page-in { animation: page-in 0.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+@keyframes cloud-drift {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(110vw); }
+}
+
+/* Bat swoops from right side all the way to land near logo on the left */
+@keyframes bat-swoop-in {
+  0%   { transform: translateX(0) scaleX(-1); }
+  60%  { transform: translateX(calc(-85vw)) scaleX(-1) translateY(10px); }
+  80%  { transform: translateX(calc(-88vw)) scaleX(-1) translateY(-6px); }
+  100% { transform: translateX(calc(-92vw)) scaleX(-1) translateY(0px); }
+}
+
+/* Static corner bats gently breathe/sway */
+@keyframes bat-hang-still {
+  0%, 100% { transform: rotate(var(--r, 0deg)) translateY(0px) scale(1); }
+  40%       { transform: rotate(calc(var(--r, 0deg) + 4deg)) translateY(-5px) scale(1.02); }
+  70%       { transform: rotate(calc(var(--r, 0deg) - 3deg)) translateY(3px) scale(0.99); }
+}
+
+
 .animate-marquee { animation: marquee 40s linear infinite; }
 .animate-fade-slide-up { animation: fade-slide-up 0.6s ease-out forwards; }
 .animate-sprinkle { animation: sprinkle ease-out forwards; }
@@ -146,7 +195,12 @@
   background-size: 48px 48px;
 }
 
-/* Light mode overrides for visibility */
+/* Light mode overrides */
+.light-mode body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
 .light-mode .text-zinc-100,
 .light-mode .text-zinc-200,
 .light-mode .text-zinc-300 {
@@ -164,23 +218,77 @@
   color: var(--text-primary) !important;
 }
 
-.light-mode .text-green-400 {
-  color: #16a34a !important;
-}
-
-.light-mode .text-red-400 {
-  color: #dc2626 !important;
-}
+.light-mode .text-green-400 { color: #16a34a !important; }
+.light-mode .text-red-400   { color: #dc2626 !important; }
+.light-mode .text-blue-400  { color: #2563eb !important; }
+.light-mode .text-purple-400{ color: #7c3aed !important; }
+.light-mode .text-yellow-400{ color: #b45309 !important; }
 
 .light-mode input,
 .light-mode select,
 .light-mode textarea {
   color: var(--text-primary) !important;
-  background-color: var(--bg-primary) !important;
+  background-color: var(--bg-panel) !important;
+  border-color: var(--border-color) !important;
 }
 
 .light-mode .hover\:bg-white\/5:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+  background-color: rgba(255,69,0,0.06) !important;
+}
+
+/* Panel and sidebar in light mode */
+.light-mode .panel {
+  background-color: var(--bg-panel) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+
+.light-mode aside {
+  background-color: #ffffff !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Nav active state light mode */
+.light-mode .bg-\[\#FF4500\] {
+  background-color: #FF4500 !important;
+  color: #ffffff !important;
+}
+
+/* Buttons */
+.light-mode .btn-ghost {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+.light-mode .btn-ghost:hover {
+  border-color: #FF4500 !important;
+  color: #FF4500 !important;
+  background-color: #fff5f2 !important;
+}
+
+/* Bg panels */
+.light-mode .bg-\[var\(--bg-panel\)\] {
+  background-color: #ffffff !important;
+}
+.light-mode .bg-\[var\(--bg-primary\)\] {
+  background-color: #f0f4ff !important;
+}
+
+/* Font colors */
+.light-mode .font-mono,
+.light-mode .font-display {
+  color: var(--text-primary);
+}
+
+/* Market ticker in light mode */
+.light-mode .border-\[var\(--border-color\)\] {
+  border-color: var(--border-color) !important;
+}
+
+/* Crypto grid in light mode */
+.light-mode .crypto-grid {
+  background-image:
+    linear-gradient(rgba(255,69,0,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,69,0,0.06) 1px, transparent 1px);
 }
 
 /* JI watermark - clearly readable in both modes */
@@ -198,6 +306,14 @@
 .dark .ji-watermark {
   opacity: 0.28;
   color: #FF4500;
+}
+
+/* Logo blend mode */
+.logo-img {
+  mix-blend-mode: screen;
+}
+.light-mode .logo-img {
+  mix-blend-mode: multiply;
 }
 
 /* News ticker styling */

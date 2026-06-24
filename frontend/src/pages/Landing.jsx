@@ -1,17 +1,121 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CurrencyBtc, CurrencyEth, CurrencyDollar } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import ConnectWallet from "@/components/ConnectWallet";
 import ThemeToggle from "@/components/ThemeToggle";
 import CryptoBackground from "@/components/CryptoBackground";
 import MarketTicker from "@/components/MarketTicker";
+import CloudLayer from "@/components/CloudLayer";
+import BatLayer from "@/components/BatLayer";
+import { useEffect, useRef, useState } from "react";
+
+function ScrollVideo() {
+  const sectionRef = useRef(null);
+  const videoRef = useRef(null);
+  const [progress, setProgress] = useState(0); // 0 = hidden, 1 = fullscreen
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const winH = window.innerHeight;
+      // progress: 0 when top of section hits bottom of screen, 1 when centered
+      const raw = 1 - rect.top / winH;
+      const p = Math.min(1, Math.max(0, raw));
+      setProgress(p);
+      setVisible(p > 0.05 && p < 0.98);
+      if (videoRef.current) {
+        if (p > 0.1) videoRef.current.play().catch(() => { });
+        else videoRef.current.pause();
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // interpolate values based on progress
+  const scale = 0.45 + progress * 0.55;          // 0.45 → 1.0
+  const radius = Math.round(24 - progress * 24);   // 24px → 0px
+  const opacity = Math.min(1, progress * 2);        // fade in fast
+  const blur = Math.max(0, (1 - progress * 2) * 8); // blur out as it opens
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative z-10 border-b border-[var(--border-color)]"
+      style={{ height: "200vh" }}  /* tall section so scroll has room */
+    >
+      <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Label above */}
+        <div
+          className="label-mini mb-4 text-center transition-all duration-300"
+          style={{ opacity: visible ? 1 : 0, transform: `translateY(${visible ? 0 : 10}px)` }}
+        >
+          // PROTOCOL OVERVIEW
+        </div>
+
+        {/* Video container */}
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+            transform: `scale(${scale})`,
+            borderRadius: `${radius}px`,
+            opacity,
+            filter: `blur(${blur}px)`,
+            overflow: "hidden",
+            transition: "border-radius 0.1s linear",
+            willChange: "transform, opacity, border-radius, filter",
+          }}
+        >
+          <video
+            ref={videoRef}
+            src="/crypto_demo.mp4"
+            muted
+            loop
+            playsInline
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+          {/* dark overlay so text is readable */}
+          <div className="absolute inset-0 bg-black/40" />
+          {/* Centered overlay text */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
+            style={{ opacity: Math.max(0, (progress - 0.6) / 0.4) }}
+          >
+            <div className="label-mini text-[#FF4500] mb-3">// SEE IT IN ACTION</div>
+            <h2 className="font-display text-4xl md:text-7xl uppercase text-white leading-none">
+              Ji Ledger<br />
+              <span className="text-[#FF4500]">Protocol</span>
+            </h2>
+            <p className="mt-4 text-zinc-300 text-sm max-w-md">
+              Your private blockchain sandbox. Every action hashed into an immutable block.
+            </p>
+            <Link to="/auth?mode=register" className="btn-primary mt-8 text-base px-10 py-4">
+              Start Building Now →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Landing() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const logo = theme === 'dark' ? '/ji-ledger-logo-dark.png' : '/ji-ledger-logo-light.png';
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden relative">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] relative" style={{ overflowX: "hidden" }}>
       <CryptoBackground density={35} variant="hero" />
+      <CloudLayer />
+      <BatLayer />
       <MarketTicker />
 
       {/* Extra Crypto Graphics - clearly visible in both dark & light mode */}
@@ -36,9 +140,10 @@ export default function Landing() {
         </div>
       </div>
 
-      <header className="flex items-center justify-between p-6 md:p-10 border-b border-[var(--border-color)] relative z-20 bg-[var(--bg-primary)]/40 backdrop-blur-md">
-        <Link to="/" className="font-display text-2xl md:text-3xl tracking-wider text-[#FF4500]">
-          / JI LEDGER
+      <header className="flex items-center justify-between p-6 md:p-10 border-b border-[var(--border-color)] relative z-20 bg-transparent backdrop-blur-sm">
+        <Link to="/" className="flex items-center gap-3">
+          <img src={logo} alt="Ji Ledger" className="w-14 h-14 object-contain" />
+          <span className="font-display text-2xl md:text-3xl tracking-wider text-[#FF4500]">JI LEDGER</span>
         </Link>
         <div className="flex items-center gap-3">
           <div className="hidden md:block">
@@ -78,6 +183,8 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      <ScrollVideo />
 
       {/* Existing Feature Section */}
       <section className="grid md:grid-cols-3 gap-px bg-[var(--border-color)] border-y border-[var(--border-color)] relative z-10">

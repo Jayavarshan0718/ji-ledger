@@ -1,28 +1,67 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Palette, Bell, ShieldCheck, Globe, Key } from "@phosphor-icons/react";
+import { Moon, Sun, Palette, ShieldCheck, Globe, Key, Copy, ArrowClockwise, Eye, EyeSlash } from "@phosphor-icons/react";
+import { toast } from "sonner";
+import { useTheme } from "@/context/ThemeContext";
+
+function generateKey() {
+    return 'ji_' + Array.from(crypto.getRandomValues(new Uint8Array(24)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function ApiAccess() {
+    const [apiKey, setApiKey] = useState(() => localStorage.getItem('ji_api_key') || '');
+    const [visible, setVisible] = useState(false);
+
+    const generate = () => {
+        const key = generateKey();
+        setApiKey(key);
+        localStorage.setItem('ji_api_key', key);
+        toast.success('New API key generated');
+    };
+
+    const copy = () => {
+        navigator.clipboard.writeText(apiKey);
+        toast.success('API key copied to clipboard');
+    };
+
+    return (
+        <div className="panel p-6 space-y-4 text-[var(--text-primary)]">
+            <div className="flex items-center gap-4">
+                <Key size={24} className="text-[#FF4500]" />
+                <div>
+                    <div className="font-bold uppercase tracking-wider">API Access</div>
+                    <div className="text-xs text-zinc-500">Generate keys to integrate with external dApps</div>
+                </div>
+            </div>
+
+            {apiKey ? (
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded px-3 py-2 font-mono text-xs">
+                        <span className="flex-1 truncate text-[#FF4500]">
+                            {visible ? apiKey : apiKey.slice(0, 6) + '••••••••••••••••••••••••••••••••••••••••'}
+                        </span>
+                        <button onClick={() => setVisible(!visible)} className="text-zinc-500 hover:text-white">
+                            {visible ? <EyeSlash size={16} /> : <Eye size={16} />}
+                        </button>
+                        <button onClick={copy} className="text-zinc-500 hover:text-[#FF4500]">
+                            <Copy size={16} />
+                        </button>
+                    </div>
+                    <div className="text-xs text-zinc-600 font-mono">Base URL: <span className="text-zinc-400">http://127.0.0.1:8000</span></div>
+                    <div className="text-xs text-zinc-600 font-mono">Usage: <span className="text-zinc-400">Authorization: Bearer {visible ? apiKey : '••••••'}</span></div>
+                    <button onClick={generate} className="btn-ghost text-xs flex items-center gap-2">
+                        <ArrowClockwise size={14} /> Regenerate Key
+                    </button>
+                </div>
+            ) : (
+                <button onClick={generate} className="btn-primary w-full">Generate API Key</button>
+            )}
+        </div>
+    );
+}
 
 export default function SettingsPage() {
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === "light") {
-            root.classList.add("light-mode");
-            root.style.setProperty('--bg-primary', '#ffffff');
-            root.style.setProperty('--bg-panel', '#f4f4f5');
-            root.style.setProperty('--text-primary', '#000000');
-            document.body.style.backgroundColor = "#ffffff";
-            document.body.style.color = "#000000";
-        } else {
-            root.classList.remove("light-mode");
-            root.style.setProperty('--bg-primary', '#050505');
-            root.style.setProperty('--bg-panel', '#0A0A0A');
-            root.style.setProperty('--text-primary', '#ffffff');
-            document.body.style.backgroundColor = "#050505";
-            document.body.style.color = "#ffffff";
-        }
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+    const { theme, setTheme } = useTheme();
 
     return (
         <div className="p-6 md:p-12">
@@ -65,13 +104,7 @@ export default function SettingsPage() {
                     <div className="text-green-500 font-mono text-xs">CONNECTED</div>
                 </div>
 
-                <div className="panel flex items-center gap-4 group cursor-pointer hover:border-[#FF4500] transition-colors text-[var(--text-primary)]">
-                    <Key size={24} className="text-zinc-500 group-hover:text-[#FF4500]" />
-                    <div>
-                        <div className="font-bold uppercase tracking-wider">API Access</div>
-                        <div className="text-xs text-zinc-500">Generate keys to integrate with external dApps</div>
-                    </div>
-                </div>
+                <ApiAccess />
 
                 <div className="panel flex items-center gap-4 opacity-50 border-dashed text-[var(--text-primary)]">
                     <ShieldCheck size={24} className="text-green-500" />

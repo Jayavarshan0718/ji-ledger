@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import ThemeBackground from "@/components/ThemeBackground";
 import Shell from "@/components/layout/Shell";
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/Auth";
@@ -49,8 +51,10 @@ function Protected({ children }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <BrowserRouter>
+        <ThemeBackground />
         <Toaster position="bottom-right" theme="dark" />
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -94,5 +98,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
