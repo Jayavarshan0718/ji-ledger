@@ -23,14 +23,9 @@
 
   body {
     @apply font-mono antialiased;
-    background-color: transparent;
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-  }
-
-  html {
     background-color: var(--bg-primary);
-    transition: background-color 0.8s ease;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -153,10 +148,7 @@
 .animate-glitch-flash { animation: glitch-flash 0.4s ease-out forwards; }
 .animate-page-in { animation: page-in 0.5s cubic-bezier(0.22,1,0.36,1) forwards; }
 
-@keyframes cloud-drift {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(110vw); }
-}
+/* cloud-drift handled inline in ThemeBackground.jsx */
 
 /* Bat swoops from right side all the way to land near logo on the left */
 @keyframes bat-swoop-in {

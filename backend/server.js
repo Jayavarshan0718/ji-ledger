@@ -9,6 +9,7 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import initSqlJs from "sql.js";
+import Razorpay from "razorpay";
 import {
   connectMongo,
   getMarketPairs,
@@ -182,6 +183,26 @@ function initSchema() {
       tx_hash TEXT NOT NULL,
       action TEXT NOT NULL,
       amount REAL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS kyc (
+      id TEXT PRIMARY KEY,
+      user_id TEXT UNIQUE NOT NULL,
+      full_name TEXT NOT NULL,
+      pan TEXT NOT NULL,
+      dob TEXT NOT NULL,
+      address TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      submitted_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS payments (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      order_id TEXT NOT NULL,
+      payment_id TEXT,
+      amount REAL NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'INR',
+      status TEXT NOT NULL DEFAULT 'created',
       created_at TEXT NOT NULL
     );
   `);
@@ -785,6 +806,74 @@ if (fs.existsSync(frontendBuild)) {
   app.use(express.static(frontendBuild));
   app.get("*", (_req, res) => res.sendFile(path.join(frontendBuild, "index.html")));
 }
+
+// ── KYC routes ───────────────────────────────────────────────
+app.post("/api/kyc/submit", authMiddleware, upload.none(), (req, res) => {
+  const { full_name, pan, dob, address } = req.body || {};
+  if (!full_name || !pan || !dob || !address)
+    return res.status(400).json({ detail: "All KYC fields are required" });
+  const existing = get("SELECT * FROM kyc WHERE user_id = ?", [req.user.id]);
+  if (existing && existing.status === "approved")
+    return res.status(400).json({ detail: "KYC already approved" });
+  const id = newId("kyc_");
+  if (existing) {
+    run("UPDATE kyc SET full_name=?, pan=?, dob=?, address=?, status='pending', submitted_at=? WHERE user_id=?",
+      [full_name, pan.toUpperCase(), dob, address, nowIso(), req.user.id]);
+  } else {
+    run("INSERT INTO kyc (id, user_id, full_name, pan, dob, address, status, submitted_at) VALUES (?,?,?,?,?,?,?,?)",
+      [id, req.user.id, full_name, pan.toUpperCase(), dob, address, "pending", nowIso()]);
+  }
+  res.json({ status: "pending", message: "KYC submitted successfully. Verification takes 1-2 business days." });
+});
+
+app.get("/api/kyc/status", authMiddleware, (req, res) => {
+  const kyc = get("SELECT status, submitted_at FROM kyc WHERE user_id = ?", [req.user.id]);
+  res.json({ kyc: kyc || null });
+});
+
+// ── Razorpay payment routes ────────────────────────────────
+const razorpay = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
+  ? new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
+  : null;
+
+app.post("/api/payment/create-order", authMiddleware, async (req, res) => {
+  if (!razorpay) return res.status(503).json({ detail: "Payment gateway not configured" });
+  const { amount_inr } = req.body || {};
+  const amountPaise = Math.round(Number(amount_inr) * 100);
+  if (!amountPaise || amountPaise < 100)
+    return res.status(400).json({ detail: "Minimum deposit is ₹1" });
+  try {
+    const order = await razorpay.orders.create({
+      amount: amountPaise, currency: "INR",
+      receipt: newId("rcpt_"),
+      notes: { user_id: req.user.id },
+    });
+    run("INSERT INTO payments (id, user_id, order_id, amount, currency, status, created_at) VALUES (?,?,?,?,?,?,?)",
+      [newId("pay_"), req.user.id, order.id, amount_inr, "INR", "created", nowIso()]);
+    res.json({ order_id: order.id, amount: amountPaise, currency: "INR", key: process.env.RAZORPAY_KEY_ID });
+  } catch (err) {
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+app.post("/api/payment/verify", authMiddleware, async (req, res) => {
+  if (!razorpay) return res.status(503).json({ detail: "Payment gateway not configured" });
+  const { order_id, payment_id, signature, amount_inr } = req.body || {};
+  const body = order_id + "|" + payment_id;
+  const expectedSig = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body).digest("hex");
+  if (expectedSig !== signature)
+    return res.status(400).json({ detail: "Payment verification failed" });
+  // Credit JI tokens at rate: ₹1 = 1 JI
+  const jiAmount = Number(amount_inr);
+  const wallet = get("SELECT * FROM wallets WHERE user_id = ? AND is_primary = 1", [req.user.id]);
+  if (wallet) {
+    run("UPDATE wallets SET balance = balance + ? WHERE id = ?", [jiAmount, wallet.id]);
+    appendBlock("deposit", { payment_id, amount_inr, ji_credited: jiAmount }, req.user.id);
+  }
+  run("UPDATE payments SET payment_id=?, status='paid' WHERE order_id=?", [payment_id, order_id]);
+  res.json({ status: "ok", ji_credited: jiAmount, new_balance: (wallet?.balance || 0) + jiAmount });
+});
 
 app.listen(PORT, () => {
   console.log(`Ji Ledger backend running at http://127.0.0.1:${PORT}`);

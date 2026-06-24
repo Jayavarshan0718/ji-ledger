@@ -199,15 +199,32 @@ export default function Dashboard() {
         </div>
         <div className="panel">
           <div className="label-mini mb-4 text-[var(--text-primary)]">Recent Blocks</div>
-          <div className="space-y-2 text-xs">
-            {recentBlocks.map((b) => (
-              <div key={b.hash} className="flex justify-between border-b border-[#27272A] py-2">
-                <span>#{b.index}</span>
-                <span className="text-zinc-500">{b.tx_type}</span>
-                <span className="truncate max-w-[120px]">{b.hash.slice(0, 14)}…</span>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {recentBlocks.length === 0 && (
+              <div className="text-xs text-zinc-500 font-mono py-4 text-center">// No blocks yet — start transacting</div>
+            )}
+            {recentBlocks.map((b) => {
+              const typeColor = {
+                genesis: "text-green-400", transfer: "text-blue-400", faucet: "text-yellow-400",
+                token_create: "text-purple-400", nft_mint: "text-pink-400", vote: "text-cyan-400",
+                market_buy: "text-green-400", market_sell: "text-red-400",
+                supply_register: "text-orange-400", proposal_create: "text-cyan-400",
+              }[b.tx_type] || "text-zinc-400";
+              return (
+                <div key={b.hash} className="flex items-center gap-3 py-2 border-b border-[var(--border-color)] last:border-0 text-xs">
+                  <span className="text-[#FF4500] font-mono font-bold w-10 shrink-0">#{b.index}</span>
+                  <span className={`font-mono px-2 py-0.5 rounded bg-[var(--bg-primary)] shrink-0 ${typeColor}`}>
+                    {b.tx_type.replace(/_/g, " ")}
+                  </span>
+                  <span className="text-zinc-500 font-mono truncate flex-1">{b.hash.slice(0, 18)}…</span>
+                  <span className="text-zinc-600 shrink-0 hidden md:block">
+                    {new Date(b.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              );
+            })}
           </div>
+          <Link to="/app/explorer" className="mt-3 text-[10px] text-[#FF4500] inline-block hover:underline">View all blocks →</Link>
         </div>
       </div>
     </div>
