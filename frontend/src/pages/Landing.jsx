@@ -8,12 +8,13 @@ import CryptoBackground from "@/components/CryptoBackground";
 import MarketTicker from "@/components/MarketTicker";
 import CloudLayer from "@/components/CloudLayer";
 import BatLayer from "@/components/BatLayer";
+import EmergentHomeBackground from "@/components/EmergentHomeBackground";
 import { useEffect, useRef, useState } from "react";
 
 function ScrollVideo() {
   const sectionRef = useRef(null);
   const videoRef = useRef(null);
-  const [progress, setProgress] = useState(0); // 0 = hidden, 1 = fullscreen
+  const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,6 @@ function ScrollVideo() {
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const winH = window.innerHeight;
-      // progress: 0 when top of section hits bottom of screen, 1 when centered
       const raw = 1 - rect.top / winH;
       const p = Math.min(1, Math.max(0, raw));
       setProgress(p);
@@ -36,20 +36,18 @@ function ScrollVideo() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // interpolate values based on progress
-  const scale = 0.45 + progress * 0.55;          // 0.45 → 1.0
-  const radius = Math.round(24 - progress * 24);   // 24px → 0px
-  const opacity = Math.min(1, progress * 2);        // fade in fast
-  const blur = Math.max(0, (1 - progress * 2) * 8); // blur out as it opens
+  const scale = 0.45 + progress * 0.55;
+  const radius = Math.round(24 - progress * 24);
+  const opacity = Math.min(1, progress * 2);
+  const blur = Math.max(0, (1 - progress * 2) * 8);
 
   return (
     <section
       ref={sectionRef}
       className="relative z-10 border-b border-[var(--border-color)]"
-      style={{ height: "200vh" }}  /* tall section so scroll has room */
+      style={{ height: "200vh" }}
     >
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Label above */}
         <div
           className="label-mini mb-4 text-center transition-all duration-300"
           style={{ opacity: visible ? 1 : 0, transform: `translateY(${visible ? 0 : 10}px)` }}
@@ -57,7 +55,6 @@ function ScrollVideo() {
           // PROTOCOL OVERVIEW
         </div>
 
-        {/* Video container */}
         <div
           style={{
             width: "100%",
@@ -81,9 +78,7 @@ function ScrollVideo() {
             playsInline
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
-          {/* dark overlay so text is readable */}
           <div className="absolute inset-0 bg-black/40" />
-          {/* Centered overlay text */}
           <div
             className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
             style={{ opacity: Math.max(0, (progress - 0.6) / 0.4) }}
@@ -113,80 +108,87 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] relative" style={{ overflowX: "hidden" }}>
-      <CryptoBackground density={35} variant="hero" />
-      <CloudLayer />
-      <BatLayer />
-      <MarketTicker />
+      {/* Emergent-style full-screen background (fixed behind everything) */}
+      <EmergentHomeBackground />
 
-      {/* Extra Crypto Graphics - clearly visible in both dark & light mode */}
-      <div className="absolute inset-0 pointer-events-none select-none z-[1]" aria-hidden>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "12%", left: "4%", animationDelay: "0s", animationDuration: "6s" }}>
-          <CurrencyBtc size={72} weight="fill" color="#f7931a" className="graphic-hero" />
-        </div>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "65%", left: "6%", animationDelay: "1.5s", animationDuration: "7s" }}>
-          <CurrencyEth size={56} weight="fill" color="#8c8cff" className="graphic-hero" />
-        </div>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "25%", right: "8%", animationDelay: "0.8s", animationDuration: "5.5s" }}>
-          <CurrencyDollar size={64} weight="fill" color="#22c55e" className="graphic-hero" />
-        </div>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "75%", right: "3%", animationDelay: "2.5s", animationDuration: "8s" }}>
-          <CurrencyBtc size={48} weight="fill" color="#f7931a" className="graphic-hero" />
-        </div>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "50%", left: "55%", animationDelay: "0.3s", animationDuration: "6.5s" }}>
-          <CurrencyEth size={40} weight="fill" color="#8c8cff" className="graphic-hero" />
-        </div>
-        <div className="animate-float-graphic" style={{ position: "absolute", top: "35%", left: "30%", animationDelay: "1s", animationDuration: "7.5s" }}>
-          <CurrencyDollar size={44} weight="fill" color="#22c55e" className="graphic-hero" />
-        </div>
-      </div>
+      {/* Hero sky area - clouds only visible in this top hero section */}
+      <div className="relative" style={{ height: "100vh", minHeight: "700px" }}>
+        <CloudLayer fullHero={true} />
+        <CryptoBackground density={35} variant="hero" />
+        <BatLayer />
+        <MarketTicker />
 
-      <header className="flex items-center justify-between p-6 md:p-10 border-b border-[var(--border-color)] relative z-20 bg-transparent backdrop-blur-sm">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="Ji Ledger" className="w-14 h-14 object-contain" />
-          <span className="font-display text-2xl md:text-3xl tracking-wider text-[#FF4500]">JI LEDGER</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block">
-            <ThemeToggle />
+        {/* Crypto Graphics */}
+        <div className="absolute inset-0 pointer-events-none select-none z-[1]" aria-hidden>
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "12%", left: "4%", animationDelay: "0s", animationDuration: "6s" }}>
+            <CurrencyBtc size={72} weight="fill" color="#f7931a" className="graphic-hero" />
           </div>
-          <div className="hidden md:block">
-            <ConnectWallet />
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "65%", left: "6%", animationDelay: "1.5s", animationDuration: "7s" }}>
+            <CurrencyEth size={56} weight="fill" color="#8c8cff" className="graphic-hero" />
           </div>
-          <Link to={user ? "/app" : "/auth"} className="btn-primary inline-flex items-center gap-2">
-            {user ? "Open Console" : "Sign In"} <ArrowRight />
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "25%", right: "8%", animationDelay: "0.8s", animationDuration: "5.5s" }}>
+            <CurrencyDollar size={64} weight="fill" color="#22c55e" className="graphic-hero" />
+          </div>
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "75%", right: "3%", animationDelay: "2.5s", animationDuration: "8s" }}>
+            <CurrencyBtc size={48} weight="fill" color="#f7931a" className="graphic-hero" />
+          </div>
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "50%", left: "55%", animationDelay: "0.3s", animationDuration: "6.5s" }}>
+            <CurrencyEth size={40} weight="fill" color="#8c8cff" className="graphic-hero" />
+          </div>
+          <div className="animate-float-graphic" style={{ position: "absolute", top: "35%", left: "30%", animationDelay: "1s", animationDuration: "7.5s" }}>
+            <CurrencyDollar size={44} weight="fill" color="#22c55e" className="graphic-hero" />
+          </div>
+        </div>
+
+        <header className="flex items-center justify-between p-6 md:p-10 border-b border-[var(--border-color)] relative z-20 bg-transparent backdrop-blur-sm">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logo} alt="Ji Ledger" className="w-14 h-14 object-contain" />
+            <span className="font-display text-2xl md:text-3xl tracking-wider text-[#FF4500]">JI LEDGER</span>
           </Link>
-        </div>
-      </header>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
+            <div className="hidden md:block">
+              <ConnectWallet />
+            </div>
+            <Link to={user ? "/app" : "/auth"} className="btn-primary inline-flex items-center gap-2">
+              {user ? "Open Console" : "Sign In"} <ArrowRight />
+            </Link>
+          </div>
+        </header>
 
-      {/* Hero Section */}
-      <section className="relative p-6 md:p-20 flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden z-10">
-        <div className="max-w-3xl z-10">
-          <h1 className="font-display text-3xl md:text-5xl uppercase mt-4 leading-[0.9] text-[#FF4500]">
-            Ji Ledger: The Sovereign Web3 Stack.
-          </h1>
-          <p className="mt-8 text-[var(--text-secondary)] max-w-2xl text-xl leading-relaxed border-l-4 border-[#FF4500] pl-6 font-medium">
-            Explore, Build, and Innovate on Your Own Decentralized Chain. Every account is auto-issued a primary 0x wallet seeded with 1000 JI. Your private blockchain sandbox awaits.
-          </p>
-          <div className="mt-12 flex flex-wrap gap-4">
-            <Link to="/auth?mode=register" className="btn-primary text-lg px-8 py-3">
-              Start Building Now →
-            </Link>
-            <Link to="/auth" className="btn-ghost text-lg px-8 py-3">
-              Sign In
-            </Link>
+        {/* Hero Section */}
+        <section className="relative p-6 md:p-20 flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden z-10">
+          <div className="max-w-3xl z-10">
+            <h1 className="font-display text-3xl md:text-5xl uppercase mt-4 leading-[0.9] text-[#FF4500]">
+              Ji Ledger: The Sovereign Web3 Stack.
+            </h1>
+            <p className="mt-8 text-[var(--text-secondary)] max-w-2xl text-xl leading-relaxed border-l-4 border-[#FF4500] pl-6 font-medium">
+              Explore, Build, and Innovate on Your Own Decentralized Chain. Every account is auto-issued a primary 0x wallet seeded with 1000 JI. Your private blockchain sandbox awaits.
+            </p>
+            <div className="mt-12 flex flex-wrap gap-4">
+              <Link to="/auth?mode=register" className="btn-primary text-lg px-8 py-3">
+                Start Building Now →
+              </Link>
+              <Link to="/auth" className="btn-ghost text-lg px-8 py-3">
+                Sign In
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-full bg-gradient-to-l from-[var(--bg-primary)] to-transparent z-0"></div>
-        <div className="hidden md:block absolute right-16 top-1/2 -translate-y-1/2 z-10">
-          <div className="font-display text-[200px] leading-none text-[#FF4500] select-none ji-watermark">
-            JI
+          <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-full bg-gradient-to-l from-[var(--bg-primary)] to-transparent z-0"></div>
+          <div className="hidden md:block absolute right-16 top-1/2 -translate-y-1/2 z-10">
+            <div className="font-display text-[200px] leading-none text-[#FF4500] select-none ji-watermark">
+              JI
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
+      {/* End of hero sky area — below uses solid bg-primary */}
 
       <ScrollVideo />
 
-      {/* Existing Feature Section */}
+      {/* Feature Section */}
       <section className="grid md:grid-cols-3 gap-px bg-[var(--border-color)] border-y border-[var(--border-color)] relative z-10">
         {[
           { t: "01 Wallet", d: "Register an account. Spawn a primary 0x address with 1000 JI pre-funded." },
@@ -200,7 +202,7 @@ export default function Landing() {
         ))}
       </section>
 
-      {/* New Feature Section — Binance-style exchange */}
+      {/* New Feature Section */}
       <section className="grid md:grid-cols-3 gap-px bg-[var(--border-color)] border-b border-[var(--border-color)] mt-10 relative z-10">
         {[
           { t: "04 Spot Trading", d: "Buy and sell JI, BTC, ETH and more with live order books, charts, and instant execution." },

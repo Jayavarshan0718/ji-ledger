@@ -34,14 +34,14 @@ const CONTENT = {
           {[
             ["POST", "/api/auth/register", "Register new user"],
             ["POST", "/api/auth/login", "Login"],
-            ["GET",  "/api/wallet/me", "Get wallet info"],
+            ["GET", "/api/wallet/me", "Get wallet info"],
             ["POST", "/api/wallet/send", "Send JI tokens"],
-            ["GET",  "/api/tokens/", "List all tokens"],
+            ["GET", "/api/tokens/", "List all tokens"],
             ["POST", "/api/tokens/create", "Deploy a token"],
-            ["GET",  "/api/nft/", "List NFTs"],
+            ["GET", "/api/nft/", "List NFTs"],
             ["POST", "/api/nft/mint", "Mint NFT"],
-            ["GET",  "/api/explorer/blocks", "Get blocks"],
-            ["GET",  "/api/voting/proposals", "List proposals"],
+            ["GET", "/api/explorer/blocks", "Get blocks"],
+            ["GET", "/api/voting/proposals", "List proposals"],
             ["POST", "/api/voting/vote", "Cast a vote"],
           ].map(([method, path, desc]) => (
             <div key={path} className="flex items-center gap-3 p-2 bg-[var(--bg-primary)] rounded">
